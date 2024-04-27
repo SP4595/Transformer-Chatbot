@@ -1,17 +1,17 @@
 {
     "Temperature" : 0.7,
-    "droupout" : 0.2,
+    "droupout" : 0.3,
     
     "lr" : 0.01,
-    "weight_decay" : 1e-6,
-    "step_size" : 200,
+    "weight_decay" : 1e-4,
+    "step_size" : 100,
     "gamma" : 0.8,
-    "epochs" : 20,
-    "batch_size" : 256,
+    "epochs" : 4,
+    "batch_size" : 64,
     "last_epoch" : -1,
 
-    "embedding_dim" : 1024,
-    "num_layers" : 3,
+    "embedding_dim" : 512,
+    "num_layers" : 4,
 
     "max_len" : 10
 }

@@ -7,6 +7,9 @@ from torch.nn.utils import clip_grad_norm_, clip_grad_value_
 from transformer import TransformerChatBot, MaskedCrossEntropy
 from utils import ChatDataset, TransformerCrossEntropyLoss, setup_seed
 import json
+from torch.utils.tensorboard import SummaryWriter
+
+
 
 with open("config.json", "r") as f:
     config = json.load(f)
@@ -17,6 +20,8 @@ print(torch.cuda.is_available())
      
 # 设置随机数种子
 setup_seed(4595)
+
+writer = SummaryWriter('./log') # 实例化 tensorboard summary writer
 
 
 X : np.ndarray = np.load("./src/X.npy")# 加载数据集
@@ -77,7 +82,7 @@ for epoch in range(num_epochs):
         loss = criterion.forward(output.reshape(-1, output.size(2)), Y_tgt.view(-1), Y_mask)
         loss.backward()
          
-        clip_grad_value_(model.parameters(), clip_value = 10) # 梯度裁减，防止NAN
+        clip_grad_norm_(model.parameters(), max_norm = 1) # 梯度裁减，防止NAN
 
         optimizer.step() # 自动识别epoch
         scheduler.step() # schedular 的 step + 1， 调整学习率
@@ -86,6 +91,9 @@ for epoch in range(num_epochs):
         if (count % 10 == 0):
             print(f'Current LR: {scheduler.get_last_lr()}')
             print(f"train: {count/len(train_loader) * 100:.4f}%, loss : {loss.item():.6f}")
+
+        writer.add_scalar('loss/train loss', loss.item(), count)
+            
         count += 1
     
     
@@ -104,6 +112,8 @@ for epoch in range(num_epochs):
     train_loss_lst.append(train_loss / len(train_loader))
     val_loss_lst.append(val_loss / len(val_loader))
     print(f"Epoch {epoch + 1}, Train Loss (Entropy): {train_loss / len(train_loader):.4f}, Validation Loss (Entropy): {val_loss / len(val_loader):.4f}")
+
+    writer.add_scalar('loss/train loss', train_loss / len(train_loader), epoch)
     
 
 
@@ -119,3 +129,7 @@ print(f"Test Loss (Entropy): {test_loss / len(test_loader):.4f}")
 
 torch.save(model.state_dict(), "./trained model/Transformer.pth")
 print("///////////model saved////////////")
+
+
+
+
