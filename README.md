@@ -38,3 +38,13 @@
 - 如无必要，不要改变隐藏层维度！
 
 - 如果 pyTorch 无缘无故报什么 `replacement error`， 那么大概率是你用了一些 `Batch size` 敏感的操作，然后最后一个 batch 不能整除，size小了一些导致你的 reshape 函数中自动调用了某些 replace 操作
+
+----------------------------------
+
+## 以上是如何让 Transformer 跑， 以下才是如何真正训练出可以用的 Transformer
+
+- <font size = 4 color = red>在ChatBot中，也许<b>Embedding维度</b>比叠加Transformer层维度还要重要！！！ 1024 维就是会比 512 维学到更多东西！</font>
+
+- <font size = 4 color = red>在ChatBot中，优化器和学习率调度非常重要，本项目使用 hugging face 在 transformers 库中推荐使用的 <b> AdamW + Warm up scheduler </b></font>
+
+- <font size = 4 color = red>即使有 scheduler, 最大学习率也不要调的太高，0.0001 数量级附近比较合适</font>

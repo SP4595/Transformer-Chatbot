@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader, random_split
 from torch.nn.utils import clip_grad_norm_, clip_grad_value_
 from transformer import TransformerChatBot, MaskedCrossEntropy
 from utils import ChatDataset, TransformerCrossEntropyLoss, setup_seed
+from transformers import get_linear_schedule_with_warmup
+from torch.optim import AdamW
 import json
 from torch.utils.tensorboard import SummaryWriter
 
@@ -58,8 +60,18 @@ model.to(device)
 
 # 定义损失函数和优化器
 criterion = MaskedCrossEntropy().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr =config["lr"], weight_decay = config["weight_decay"])
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=config["step_size"], gamma=config["gamma"], last_epoch = config["last_epoch"]) # schedule 让 lr 慢慢减小
+
+# 弃用
+# optimizer = torch.optim.Adam(model.parameters(), lr =config["lr"], weight_decay = config["weight_decay"])
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=config["step_size"], gamma=config["gamma"], last_epoch = config["last_epoch"]) # schedule 让 lr 慢慢减小
+
+
+num_training_steps = config["epochs"] * len(train_loader) # get_linear_schedule_with_warmup 需要这个参数
+num_warmup_steps = config["warmup_steps"]
+
+optimizer = AdamW(model.parameters(), lr = config["lr"], weight_decay = config["weight_decay"]) # 这里面 lr 就是warm up阶段的最大 lr
+scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps, num_training_steps)
+
 # 训练模型
 num_epochs = config["epochs"]
 train_loss_lst = []
